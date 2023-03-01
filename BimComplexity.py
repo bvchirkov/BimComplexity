@@ -44,7 +44,7 @@ class BimComplexity(object):
 
     def _calulate(self):
         zones_to_process = set([self.bim.safety_zone])
-        receiving_zone = zones_to_process.pop()
+        receiving_zone: Zone = zones_to_process.pop()
 
         graph_level_elemnts = []
         current_graph_level = 0
@@ -52,7 +52,6 @@ class BimComplexity(object):
 
         while True:
             current_graph_level = receiving_zone.graph_level
-            max_graph_level = max(max_graph_level, current_graph_level)
 
             transit: Transit
             for transit in (self.bim.transits[tid] for tid in receiving_zone.output):
@@ -60,10 +59,11 @@ class BimComplexity(object):
                     continue
 
                 giving_zone: Zone = self.bim.zones[transit.output[0]]
-                if giving_zone.id == receiving_zone:
+                if giving_zone.id == receiving_zone.id:
                     giving_zone = self.bim.zones[transit.output[1]]
                 
-                giving_zone.is_visited = True
+                # if giving_zone.graph_level != 0:
+                #     print(giving_zone, giving_zone.graph_level)
                 giving_zone.graph_level = current_graph_level + 1
                 transit.is_visited = True
 
@@ -74,19 +74,18 @@ class BimComplexity(object):
 
                 if len(giving_zone.output) > 1: # отсекаем помещения, в которых одна дверь
                     zones_to_process.add(giving_zone)
-                
-            
-            receiving_zone = zones_to_process.pop()
-            # print(receiving_zone.graph_level)
+
+                max_graph_level = max(max_graph_level, giving_zone.graph_level)
+                # print(giving_zone.name, giving_zone.graph_level)
 
             if len(zones_to_process) == 0:
                 break
-        
-        # print(graph_level_elemnts, sum(graph_level_elemnts))
+            
+            receiving_zone = zones_to_process.pop()
         
         self.width_of_bim_graph = max(graph_level_elemnts)
         self.depth_of_bim_graph = max_graph_level
 
     
     def __str__(self) -> str:
-        return f"N_w = {self.number_of_zones}\nN_b = {self.number_of_transits}\nM_w = {self.width_of_bim_graph}\nL_w = {self.depth_of_bim_graph}"
+        return f"N_w = {self.number_of_zones} - Количество помещений\nN_b = {self.number_of_transits} - Количество дверей\nM_w = {self.width_of_bim_graph} - Ширина графа\nL_w = {self.depth_of_bim_graph} - Глубина графа"
