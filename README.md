@@ -11,8 +11,8 @@
 
 ### Example output
 ```
-N_w = 6 - Количество помещений
-N_b = 6 - Количество дверей
-M_w = 1 - Ширина графа
-L_w = 6 - Глубина графа
+N_w = 6 - Number of zones
+N_b = 7 - Number of transits
+M_w = 4 - Width graph
+L_w = 3 - Depth graph
 ```
