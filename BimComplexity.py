@@ -86,6 +86,10 @@ class BimComplexity(object):
         self.width_of_bim_graph = max(graph_level_elemnts)
         self.depth_of_bim_graph = max_graph_level
 
+        visited_zones = list(filter(lambda x: x.is_visited, self.bim.zones.values()))
+        if len(visited_zones) != len(self.bim.zones.values()) - 1:
+            raise ValueError("Connectivity on the graph is broken")
+
     
     def __str__(self) -> str:
         return f"N_w = {self.number_of_zones} - Количество помещений\nN_b = {self.number_of_transits} - Количество дверей\nM_w = {self.width_of_bim_graph} - Ширина графа\nL_w = {self.depth_of_bim_graph} - Глубина графа"
