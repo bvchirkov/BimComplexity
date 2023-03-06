@@ -47,6 +47,13 @@ class Bim:
             print(">TransitError. Please check next transits:")
             for t, z in incorrect_transits:
                 print(f"Transit({t.id}), Zone({z.id}, name={z.name})")
+            
+            print("How to find a bad transition in QGIS:\n \
+    1) select layer doorNN\n \
+    2) open the attributes table \n \
+    3) click to select features using an expression \n \
+    4) enter expression: id is 'uuid'. Example: id is '9b9e7724-a021-4099-9dfe-c9b04fdf64ee' \n \
+    5) click the right-bottom button 'Select features'")
             exit()
 
         self._init_safety_zone()
@@ -101,7 +108,6 @@ class Transit(BBuildElement):
         edge_points.sort(reverse=True)
         
         if not (len(edge_points) == 2):
-            # raise ValueError(f"Polygons incorrect intersect: Transit({self.id}), Zone({zone_element.id}, name={zone_element.name})")
             return False
         
         p1 = transit_points.pop(edge_points[0])
@@ -112,7 +118,6 @@ class Transit(BBuildElement):
         length = lambda p1, p2: pow(pow(p2[0] - p1[0], 2) + pow(p2[1] - p1[1], 2), 0.5)
 
         self._width = round((length(p1, p2) + length(p3, p4))/2, NDIGITS)
-        # print(edge_points, self._width)
 
         return True
         
