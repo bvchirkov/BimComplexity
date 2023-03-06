@@ -30,10 +30,24 @@ class Bim:
                     if len(element.output) == 1:
                         self._sz_output.append(e.id)
 
+        incorrect_transits = []
         t: Transit # for typing the variable
         for t in self.transits.values():
             z_linked:Zone = self.zones[t.output[0]]
-            t.calculate_width(z_linked)
+            # TODO Calculate the width for transits of type DoorWay
+            if not (t.sign == BSign.DoorWayOut) and t.sign == BSign.DoorWay:
+                if z_linked.sign == BSign.Staircase and self.zones[t.output[1]].sign == BSign.Staircase:
+                    continue
+            
+            is_successful = t.calculate_width(z_linked)
+            if not is_successful:
+                incorrect_transits.append((t, z_linked))
+
+        if len(incorrect_transits) > 0:
+            print(">TransitError. Please check next transits:")
+            for t, z in incorrect_transits:
+                print(f"Transit({t.id}), Zone({z.id}, name={z.name})")
+            exit()
 
         self._init_safety_zone()
         self.zones[self.safety_zone.id] = self.safety_zone
@@ -78,7 +92,7 @@ class Transit(BBuildElement):
             raise ValueError("Width of transit below or equal 0 is not possible")
         self._width = w
 
-    def calculate_width(self, zone_element:BBuildElement) -> None:
+    def calculate_width(self, zone_element:BBuildElement) -> bool:
         transit_points = [[p.x, p.y] for p in self.points[:-1]]
         zone_points = [[p.x, p.y] for p in zone_element.points[:-1]]
         zone_tri = Delaunay(zone_points)
@@ -86,8 +100,9 @@ class Transit(BBuildElement):
         edge_points = [i for i, p in enumerate(transit_points) if self._point_in_polygon(p, zone_tri)]
         edge_points.sort(reverse=True)
         
-        if not len(edge_points):
-            raise ValueError(f"Edge points is empty. Transit({self.id}), Zone({zone_element.id})")
+        if not (len(edge_points) == 2):
+            # raise ValueError(f"Polygons incorrect intersect: Transit({self.id}), Zone({zone_element.id}, name={zone_element.name})")
+            return False
         
         p1 = transit_points.pop(edge_points[0])
         p2 = transit_points.pop(edge_points[1])
@@ -98,6 +113,8 @@ class Transit(BBuildElement):
 
         self._width = round((length(p1, p2) + length(p3, p4))/2, NDIGITS)
         # print(edge_points, self._width)
+
+        return True
         
 
     def _point_in_polygon(self, point, zone_tri:Delaunay) -> bool:
